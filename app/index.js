@@ -2,9 +2,7 @@
 const express = require('express')
 const app = express()
 
-const userRouter = require('./routers/userRouter.js')
-const authRouter = require('./routers/authRouter.js')
-
+const video = require('./routers/videoRouter.js')
 
 var cookieParser = require('cookie-parser');
 const jsonParser = express.json();
@@ -20,8 +18,7 @@ app.get('/', (_req, res) => {
 
 
 
-app.use('/users', userRouter)
-app.use('/auth', authRouter)
+app.use('/video', userRouter)
 
 app.listen(3000, () => {
   console.log('Сервер запущен')

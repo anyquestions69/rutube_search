@@ -2,27 +2,28 @@ const Sequelize = require("sequelize");
 const sequelize = require('../config/database')
 
 
-const User = sequelize.define("user", {
-    id: {
-      type: Sequelize.BIGINT,
-      autoIncrement: true,
-      primaryKey: true,
-      allowNull: false
+const Video = sequelize.define("video", {
+   
+    video_id:{
+      type:Sequelize.NUMBER
     },
-    firstname: {
+    video_title:{
       type: Sequelize.STRING,
     },
-    lastname: {
+    channel_title:{
       type: Sequelize.STRING,
     },
-    email: {
-      type: Sequelize.STRING,
-      allowNull:false,
-      unique:true
+    v_channel_reg_datetime:{
+      type: Sequelize.DATE,
     },
-    password: {
+    v_channel_type:{
       type: Sequelize.STRING,
-      allowNull:false
+    },
+    v_category:{
+      type: Sequelize.STRING,
+    },
+    v_pub_datetime:{
+      type: Sequelize.STRING,
     }
   },{
     timestamps: false
@@ -39,4 +40,4 @@ sequelize.sync({force: false}).then(async function (result){
 })
 .catch(err=> console.log(err));
 
-module.exports = { User}
+module.exports = { Video}

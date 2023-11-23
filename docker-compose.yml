@@ -1,0 +1,108 @@
+version: '3'
+
+services:
+  #API
+  app:
+    build:
+      context: ./app
+    working_dir: /opt/server
+    env_file:
+      - .env
+    restart: always
+    expose:
+      - '3000'
+    depends_on:
+      - db
+    volumes:
+      - videos:/opt/server/videos
+    networks:
+      - network
+    command: npm run start
+
+  # Контейнер с базой данных
+  db:
+    image: postgres:12-alpine
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      #- POSTGRES_DB=${DB_NAME}
+    volumes:
+      - postgres:/var/lib/postgresql/data
+      - ./db_data:/docker-entrypoint-initdb.d
+    expose:
+      - '5432'
+    networks:
+      - network
+    restart: always
+
+  # Контейнер с nginx
+  nginx:
+    container_name: proxy_nginx
+    depends_on:
+      - app
+      - db
+    image: nginx:latest
+    ports:
+      - '80:80'
+      - '443:443'
+    networks:
+      - network
+    volumes:
+      - ./nginx:/etc/nginx/conf.d
+      - ./static:/var/www/static
+      - videos:/var/www/static/videos
+    restart: always
+    
+  pgadmin:
+    container_name: pgadmin
+    depends_on:
+      - db
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: a@mail.cu
+      PGADMIN_DEFAULT_PASSWORD: 0666
+    expose:
+      - '80'
+    restart: always
+
+  rabbitmq:
+    container_name: rabbitmq
+    image:  rabbitmq:3.11-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - network
+  
+  broker:
+    container_name: broker
+    build: broker/
+    working_dir:
+      /usr/src/broker
+    ports:
+      - "3001:3001"
+    depends_on:
+      - rabbitmq
+    command: npm run start
+    restart: always
+    networks:
+      - network
+
+  ml_worker:
+    container_name: ml_worker
+    build: ml_worker/
+    depends_on:
+      - rabbitmq
+      - db
+    restart: always
+    volumes:
+      postgres:/var/lib/postgresql/data
+    command: sh -c '/ml_worker/wait-for-it.sh rabbitmq:5672 --timeout=15 -- python3 /ml_worker/handle.py & python3 /ml_worker/rpc-server.py'
+    networks:
+      - network
+
+networks:
+  network: {}
+volumes:
+  postgres:
+  videos:

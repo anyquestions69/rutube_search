@@ -1,9 +1,9 @@
 const express = require("express");
-const userController = require("../controllers/userController.js");
-const userRouter = express.Router();
+const videoController = require("../controllers/videoController.js");
+const videoRouter = express.Router();
  
-userRouter.get("/", userController.getAll);
-userRouter.get('/:id', userController.getOne)
+videoRouter.get("/", videoController.getAll);
+videoRouter.get('/:id', videoController.getOne)
 
  
-module.exports = userRouter;
+module.exports = videoRouter;
